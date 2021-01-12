@@ -59,9 +59,6 @@ function basicBLEAdvertise () {
         # . # # .
         `)
 }
-function setPin () {
-	
-}
 function cmdPassword (pwd: string) {
     serial.writeLine("received password:" + pwd)
     if (pwd == SYS_PASSWORD) {
