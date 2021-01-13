@@ -1,13 +1,17 @@
 bluetooth.onUartDataReceived(serial.delimiters(Delimiters.Dollar), function () {
+    serial.writeLine("received command")
     command = bluetooth.uartReadUntil(serial.delimiters(Delimiters.Dollar))
     command_code = command.split(":")
-    serial.writeLine("command code:" + command_code)
+    serial.writeLine("command code:" + command_code[0])
     if (command_code[0] == "P") {
         serial.writeLine("requested password")
         cmdPassword(command_code[1])
-    } else if (command_code[0] == "1") {
+    } else if (command_code[0] == "A") {
         serial.writeLine("requested pin activation")
         activatePin()
+    } else if (command_code[0] == "D") {
+        serial.writeLine("requested pin deactivation")
+        deActivatePin()
     } else {
         serial.writeLine("invalid command")
     }
@@ -38,7 +42,11 @@ bluetooth.onBluetoothDisconnected(function () {
     basicBLEAdvertise()
 })
 input.onButtonPressed(Button.A, function () {
-    bluetooth.uartWriteNumber(9)
+    if (pins.digitalReadPin(DigitalPin.P0) == 0) {
+        pins.digitalWritePin(DigitalPin.P1, 1)
+    } else {
+        pins.digitalWritePin(DigitalPin.P1, 0)
+    }
 })
 function publishBLEServices () {
     bluetooth.startButtonService()
@@ -59,6 +67,17 @@ function basicBLEAdvertise () {
         # . # # .
         `)
 }
+function deActivatePin () {
+    serial.writeLine("activatePin")
+    if (ble_connected == 2) {
+        serial.writeLine("deactivating...")
+        pins.digitalWritePin(DigitalPin.P0, 0)
+        bluetooth.uartWriteString("A:OK")
+    } else {
+        serial.writeLine("access denied")
+        bluetooth.uartWriteString("A:KO")
+    }
+}
 function cmdPassword (pwd: string) {
     serial.writeLine("received password:" + pwd)
     if (pwd == SYS_PASSWORD) {
@@ -72,10 +91,10 @@ function cmdPassword (pwd: string) {
             # . # . .
             . # . . .
             `)
-        bluetooth.uartWriteNumber(0)
+        bluetooth.uartWriteString("P:OK")
     } else {
         serial.writeLine("wrong password:" + pwd)
-        bluetooth.uartWriteNumber(1)
+        bluetooth.uartWriteString("P:KO")
         bluetooth.stopAdvertising()
         basicBLEAdvertise()
     }
@@ -84,11 +103,11 @@ function activatePin () {
     serial.writeLine("activatePin")
     if (ble_connected == 2) {
         serial.writeLine("activating...")
-        bluetooth.uartWriteNumber(0)
         pins.digitalWritePin(DigitalPin.P0, 1)
+        bluetooth.uartWriteString("A:OK")
     } else {
         serial.writeLine("access denied")
-        bluetooth.uartWriteNumber(1)
+        bluetooth.uartWriteString("A:KO")
     }
 }
 let ble_connected = 0
