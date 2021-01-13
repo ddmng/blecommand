@@ -12,6 +12,9 @@ bluetooth.onUartDataReceived(serial.delimiters(Delimiters.Dollar), function () {
     } else if (command_code[0] == "D") {
         serial.writeLine("requested pin deactivation")
         deActivatePin()
+    } else if (command_code[0] == "S") {
+        serial.writeLine("requested pin status")
+        getStatus()
     } else {
         serial.writeLine("invalid command")
     }
@@ -72,10 +75,10 @@ function deActivatePin () {
     if (ble_connected == 2) {
         serial.writeLine("deactivating...")
         pins.digitalWritePin(DigitalPin.P0, 0)
-        bluetooth.uartWriteString("A:OK")
+        bluetooth.uartWriteString("D:OK")
     } else {
         serial.writeLine("access denied")
-        bluetooth.uartWriteString("A:KO")
+        bluetooth.uartWriteString("D:KO")
     }
 }
 function cmdPassword (pwd: string) {
@@ -108,6 +111,16 @@ function activatePin () {
     } else {
         serial.writeLine("access denied")
         bluetooth.uartWriteString("A:KO")
+    }
+}
+function getStatus () {
+    serial.writeLine("getStatus")
+    if (ble_connected == 2) {
+        serial.writeLine("getting status...")
+        bluetooth.uartWriteString("S:" + pins.digitalReadPin(DigitalPin.P0))
+    } else {
+        serial.writeLine("access denied")
+        bluetooth.uartWriteString("S:KO")
     }
 }
 let ble_connected = 0
