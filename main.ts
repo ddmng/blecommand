@@ -1,3 +1,14 @@
+function stopAdvertising () {
+    bluetooth.stopAdvertising()
+    basic.showLeds(`
+        . # # # .
+        # . . . #
+        # # # # #
+        # . . . #
+        . # # # .
+        `)
+    advertising = 0
+}
 bluetooth.onUartDataReceived(serial.delimiters(Delimiters.Dollar), function () {
     serial.writeLine("received command")
     command = bluetooth.uartReadUntil(serial.delimiters(Delimiters.Dollar))
@@ -85,6 +96,7 @@ function basicBLEAdvertise () {
         . # # . #
         # . # # .
         `)
+    advertising = 1
 }
 function deActivatePin () {
     serial.writeLine("activatePin")
@@ -156,10 +168,21 @@ function getStatus () {
 let ble_connected = 0
 let command_code: string[] = []
 let command = ""
+let advertising = 0
 let SYS_PASSWORD = ""
 serial.writeLine("started")
 basicBLEAdvertise()
 SYS_PASSWORD = "AAAA"
+advertising = 1
 basic.forever(function () {
-	
+    serial.writeLine("loop")
+    if (advertising == 1) {
+        if (ble_connected != 2) {
+            stopAdvertising()
+            basic.pause(50000)
+        }
+    } else {
+        basicBLEAdvertise()
+        basic.pause(10000)
+    }
 })
