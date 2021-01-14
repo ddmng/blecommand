@@ -46,9 +46,25 @@ bluetooth.onBluetoothDisconnected(function () {
 })
 input.onButtonPressed(Button.A, function () {
     if (pins.digitalReadPin(DigitalPin.P0) == 0) {
-        pins.digitalWritePin(DigitalPin.P1, 1)
+        pins.digitalWritePin(DigitalPin.P0, 1)
+        basic.showLeds(`
+            . # . . .
+            # # . . .
+            . # . . .
+            . # . . .
+            . # . . #
+            `)
+        bluetooth.uartWriteString("F:OK")
     } else {
-        pins.digitalWritePin(DigitalPin.P1, 0)
+        pins.digitalWritePin(DigitalPin.P0, 0)
+        basic.showLeds(`
+            # # # . .
+            # . # . .
+            # . # . .
+            # . # . .
+            # # # . #
+            `)
+        bluetooth.uartWriteString("F:OK")
     }
 })
 function publishBLEServices () {
@@ -76,6 +92,13 @@ function deActivatePin () {
         serial.writeLine("deactivating...")
         pins.digitalWritePin(DigitalPin.P0, 0)
         bluetooth.uartWriteString("D:OK")
+        basic.showLeds(`
+            # # # . .
+            # . # . .
+            # . # . .
+            # . # . .
+            # # # . .
+            `)
     } else {
         serial.writeLine("access denied")
         bluetooth.uartWriteString("D:KO")
@@ -108,6 +131,13 @@ function activatePin () {
         serial.writeLine("activating...")
         pins.digitalWritePin(DigitalPin.P0, 1)
         bluetooth.uartWriteString("A:OK")
+        basic.showLeds(`
+            . # . . .
+            # # . . .
+            . # . . .
+            . # . . .
+            . # . . .
+            `)
     } else {
         serial.writeLine("access denied")
         bluetooth.uartWriteString("A:KO")
